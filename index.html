@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ChangCreatingCode:页面跳转" />
+    <title>ChangCreatingCode:页面跳转</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px 32px 32px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            min-height: 280px;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            margin: 20px auto 16px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #1a73e8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 15px;
+            color: #4b5563;
+            line-height: 1.6;
+            padding: 0 8px;
+        }
+        .icon-wrapper {
+            width: 72px;
+            height: 72px;
+            border-radius: 25px;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .icon-wrapper svg {
+            width: 48px;
+            height: 48px;
+            fill: #6b7280;
+        }
+        .message {
+            font-size: 16px;
+            color: #1f2937;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            word-break: break-all;
+        }
+        .message .url {
+            font-weight: 500;
+            color: #111827;
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            max-width: 100%;
+            word-break: break-all;
+        }
+        .open-mode-hint {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+            text-align: center;
+            color: #ffffff;
+        }
+        .btn-primary {
+            background: #1a73e8;
+        }
+        .btn-primary:hover { background: #1557b0; }
+        .btn-primary:active { background: #0f4a8a; }
+        .btn-secondary {
+            background: #d1d5db;
+            color: #1f2937;
+        }
+        .btn-secondary:hover { background: #b9bfc7; }
+        .btn-secondary:active { background: #a3aab4; }
+        .error-msg {
+            font-size: 18px;
+            color: #dc2626;
+            padding: 20px 0;
+            font-weight: 500;
+        }
+        .text-sm {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 16px;
+        }
+        #fullscreenIframeContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+            background: white;
+            display: none;
+            flex-direction: column;
+        }
+        #fullscreenIframeContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex: 1;
+        }
+        #iframeLoadingMask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            transition: opacity 0.3s;
+        }
+        #iframeLoadingMask .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #1a73e8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        #iframeLoadingMask .text {
+            color: #4b5563;
+            font-size: 14px;
+        }
+        #iframeLoadingMask.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <div id="loadingPage" class="page active">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在解析Url参数，请等待加载完成再执行“添加到主屏幕”操作</div>
+    </div>
+    <div id="confirmPage" class="page">
+        <div class="icon-wrapper">
+            <img id="faviconImg" src="" alt="网站图标" />
+            <svg id="fallbackSvg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+        </div>
+        <div class="message">
+            <span>此页面想要跳转到</span>
+            <span>（</span>
+            <span class="url" id="targetUrlDisplay"></span>
+            <span>），是否继续？</span>
+        </div>
+        <div id="openModeHint" class="open-mode-hint"></div>
+        <div class="button-group">
+            <button class="btn btn-primary" id="confirmBtn">确定</button>
+            <button class="btn btn-secondary" id="cancelBtn">取消</button>
+        </div>
+    </div>
+    <div id="errorPage" class="page">
+        <div class="error-msg">此页面未正确配置Url参数，无法跳转</div>
+        <div class="text-sm">请检查链接格式<br />示例：?Domain-name=www.baidu.com&https-visit=true&open-mode=iframe</div>
+    </div>
+</div>
+<div id="fullscreenIframeContainer">
+    <div id="iframeLoadingMask">
+        <div class="spinner"></div>
+        <div class="text">正在加载目标页面...</div>
+    </div>
+    <iframe id="fullscreenIframe" src="about:blank"></iframe>
+</div>
+<script>
+(function() {
+    function getParam(name) {
+        var params = new URLSearchParams(window.location.search);
+        return params.get(name);
+    }
+    function cleanDomain(domain) {
+        return domain.replace(/^https?:\/\//, '');
+    }
+    function showPage(pageId) {
+        var pages = document.querySelectorAll('.page');
+        for (var i = 0; i < pages.length; i++) {
+            pages[i].classList.remove('active');
+        }
+        document.getElementById(pageId).classList.add('active');
+    }
+    function injectAppleTouchIcon(url) {
+        var oldLink = document.querySelector('link[rel="apple-touch-icon"]');
+        if (oldLink) oldLink.remove();
+        var link = document.createElement('link');
+        link.rel = 'apple-touch-icon';
+        link.href = url;
+        document.head.appendChild(link);
+    }
+    var domain = getParam('Domain-name');
+    var httpsFlag = getParam('https-visit');
+    var openMode = getParam('open-mode');
+    if (openMode && !['redirect', 'iframe', 'newwindow'].includes(openMode)) {
+        openMode = 'redirect';
+    }
+    if (!openMode) openMode = 'redirect';
+    var isValid = false;
+    var targetUrl = '';
+    if (domain) {
+        domain = cleanDomain(domain);
+        if (domain.length > 0) {
+            var useHttps = httpsFlag && httpsFlag.toLowerCase() === 'true';
+            targetUrl = (useHttps ? 'https://' : 'http://') + domain;
+            isValid = true;
+        }
+    }
+    if (!isValid) {
+        showPage('errorPage');
+        return;
+    }
+    var faviconImg = document.getElementById('faviconImg');
+    var fallbackSvg = document.getElementById('fallbackSvg');
+    var targetUrlDisplay = document.getElementById('targetUrlDisplay');
+    var confirmBtn = document.getElementById('confirmBtn');
+    var cancelBtn = document.getElementById('cancelBtn');
+    var openModeHint = document.getElementById('openModeHint');
+    targetUrlDisplay.textContent = targetUrl;
+    var modeMap = {
+        'redirect': '当前窗口跳转',
+        'iframe': '内嵌全屏浏览',
+        'newwindow': '新标签页打开'
+    };
+    openModeHint.textContent = '打开方式：' + (modeMap[openMode] || '当前窗口跳转');
+    var iconUrl = 'https://' + domain + '/favicon.ico';
+    var isFinished = false;
+    function finishLoading(iconSrc) {
+        if (isFinished) return;
+        isFinished = true;
+        injectAppleTouchIcon(iconSrc);
+        if (iconSrc === iconUrl) {
+            faviconImg.src = iconUrl;
+            faviconImg.style.display = 'block';
+            fallbackSvg.style.display = 'none';
+        } else {
+            faviconImg.style.display = 'none';
+            fallbackSvg.style.display = 'block';
+        }
+        showPage('confirmPage');
+    }
+    var timeoutId = setTimeout(function() {
+        if (!isFinished) {
+            var svgElem = document.getElementById('fallbackSvg');
+            var svgData = new XMLSerializer().serializeToString(svgElem);
+            var svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            var reader = new FileReader();
+            reader.onload = function() {
+                finishLoading(reader.result);
+            };
+            reader.readAsDataURL(svgBlob);
+        }
+    }, 5000);
+    faviconImg.src = iconUrl;
+    faviconImg.onload = function() {
+        clearTimeout(timeoutId);
+        if (!isFinished) finishLoading(iconUrl);
+    };
+    faviconImg.onerror = function() {
+        clearTimeout(timeoutId);
+        if (!isFinished) {
+            var svgElem = document.getElementById('fallbackSvg');
+            var svgData = new XMLSerializer().serializeToString(svgElem);
+            var svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            var reader = new FileReader();
+            reader.onload = function() {
+                finishLoading(reader.result);
+            };
+            reader.readAsDataURL(svgBlob);
+        }
+    };
+    cancelBtn.addEventListener('click', function() {
+        history.back();
+    });
+    confirmBtn.addEventListener('click', function() {
+        if (openMode === 'redirect') {
+            window.location.href = targetUrl;
+        } else if (openMode === 'newwindow') {
+            var newWin = window.open(targetUrl, '_blank');
+            if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
+                alert('弹窗被浏览器拦截，请允许本站弹出窗口，或更换为其他打开方式。');
+            }
+        } else if (openMode === 'iframe') {
+            var container = document.getElementById('fullscreenIframeContainer');
+            var iframe = document.getElementById('fullscreenIframe');
+            var loadingMask = document.getElementById('iframeLoadingMask');
+            container.style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            loadingMask.classList.remove('hidden');
+            iframe.src = targetUrl;
+            iframe.onload = function() {
+                loadingMask.classList.add('hidden');
+            };
+            iframe.onerror = function() {
+                loadingMask.classList.add('hidden');
+            };
+        }
+    });
+})();
+</script>
+</body>
+</html>

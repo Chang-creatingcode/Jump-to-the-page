@@ -276,6 +276,7 @@
         }
         .guide-icon-area {
             display: flex;
+            flex-direction:column
             align-items: center;
             gap: 12px;
             width: 100%;
@@ -306,6 +307,7 @@
         }
         .guide-icon-area .icon-label {
             font-size: 14px;
+            margin-bottom:8px
             color: #1f2937;
             line-height: 1.4;
         }
@@ -451,6 +453,7 @@
 
             <!-- 图标自定义区域 -->
             <div class="guide-icon-area" id="iconArea">
+                <span class="icon-label">自定义您的web应用图标</span>
                 <div class="icon-thumb" id="guideIconThumb">
                     <img id="guideIconImg" src="" alt="图标" />
                     <svg id="guideFallbackSvg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
@@ -459,7 +462,7 @@
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                     </svg>
                 </div>
-                <span class="icon-label">点击左侧图片以自定义您的web应用图标</span>
+                
             </div>
 
             <!-- 添加指引-->

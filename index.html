@@ -603,37 +603,51 @@
 
     // ---------- 动作封装 ----------
     function performAction(action) {
-        if (action === 'confirm') {
-            if (openMode === 'redirect') {
-                window.location.href = targetUrl;
-            } else if (openMode === 'newwindow') {
-                var newWin = window.open(targetUrl, '_blank');
-                if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
-                    alert('弹窗被浏览器拦截，请允许本站弹出窗口，或更换为其他打开方式。');
-                }
-            } else if (openMode === 'iframe') {
-                var containerIframe = document.getElementById('fullscreenIframeContainer');
-                var iframe = document.getElementById('fullscreenIframe');
-                var loadingMask = document.getElementById('iframeLoadingMask');
-                containerIframe.style.display = 'flex';
-                document.getElementById('app').style.display = 'none';
-                loadingMask.classList.remove('hidden');
-                iframe.src = targetUrl;
-                iframe.onload = function() {
-                    loadingMask.classList.add('hidden');
-                };
-                iframe.onerror = function() {
-                    loadingMask.classList.add('hidden');
-                };
-            }
-        } else if (action === 'cancel') {
-            history.back();
-        } else if (action === 'errorOk') {
-            document.getElementById('app').classList.add('container-hidden');
-        } else if (action === 'webappOk') {
-            document.getElementById('app').classList.add('container-hidden');
+    // 确认跳转（独立模式、普通模式确定按钮）
+    if (action === 'confirm') {
+        // 如果 targetUrl 无效，弹窗提示（用户能看到）
+        if (!targetUrl) {
+            alert('目标 URL 无效，请检查参数 Domain-name');
+            return;
         }
+        // 根据 openMode 执行跳转
+        if (openMode === 'newwindow') {
+            var newWin = window.open(targetUrl, '_blank');
+            if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
+                alert('弹窗被拦截，请允许弹出窗口');
+            }
+        } else if (openMode === 'iframe') {
+            var containerIframe = document.getElementById('fullscreenIframeContainer');
+            var iframe = document.getElementById('fullscreenIframe');
+            var loadingMask = document.getElementById('iframeLoadingMask');
+            containerIframe.style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            loadingMask.classList.remove('hidden');
+            iframe.src = targetUrl;
+            iframe.onload = function() {
+                loadingMask.classList.add('hidden');
+            };
+            iframe.onerror = function() {
+                loadingMask.classList.add('hidden');
+            };
+        } else {
+            // 默认 redirect
+            window.location.href = targetUrl;
+        }
+    } 
+    // WebApp 模式“好”按钮：仅关闭卡片
+    else if (action === 'webappOk') {
+        document.getElementById('app').classList.add('container-hidden');
+    } 
+    // 取消按钮
+    else if (action === 'cancel') {
+        history.back();
+    } 
+    // 错误页“好”按钮：关闭卡片
+    else if (action === 'errorOk') {
+        document.getElementById('app').classList.add('container-hidden');
     }
+}
 
     // ---------- 独立模式：直接以指定模式打开 ----------
     if (isValid && isStandalone()) {

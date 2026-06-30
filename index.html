@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-title" content="ChangCreatingCode:页面跳转" />
     <title>ChangCreatingCode:页面跳转</title>
     <style>
-        /* ===== 样式保持不变，仅修改图标区域相关 ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -250,7 +249,6 @@
             width: 100%;
             text-align: center;
         }
-        /* 输入框上方引导语 */
         .guide-input-label {
             font-size: 14px;
             color: #1f2937;
@@ -277,8 +275,10 @@
             outline: none;
             font-weight: 500;
         }
+        /* 删除输入框焦点样式 */
         .guide-input:focus {
-            box-shadow: inset 0 0 0 2px rgba(26, 115, 232, 0.4);
+            outline: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* 保持与无焦点一致 */
         }
         .guide-input::placeholder {
             color: #9ca3af;
@@ -323,6 +323,7 @@
             height: 44px;
             fill: #6b7280;
         }
+        /* 步骤图片容器自适应高度，完整显示图片 */
         .guide-step {
             width: 100%;
             margin-top: 16px;
@@ -332,16 +333,12 @@
             border-radius: 16px;
             overflow: hidden;
             background: #e5e7eb;
-            aspect-ratio: 16/9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin-bottom: 6px;
+            /* 移除固定宽高比和flex居中，让图片自然撑开 */
         }
         .guide-step .step-image img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            height: auto;
             display: block;
         }
         .guide-step .step-desc {
@@ -458,11 +455,9 @@
         <div id="webappGuideContent" style="display:none; width:100%;">
             <div class="guide-title" id="guideTitle">将 <span class="url" id="guideTargetUrl"></span> 添加到主屏幕</div>
 
-            <!-- 输入框上方引导语 -->
             <label class="guide-input-label">修改您的web应用名称</label>
             <input class="guide-input" id="appNameInput" type="text" placeholder="修改您的web应用名称" value="" />
 
-            <!-- 图标自定义区域（上下布局） -->
             <div class="guide-icon-area" id="iconArea">
                 <span class="icon-label">点击下方图片以自定义您的web应用图标</span>
                 <div class="icon-thumb" id="guideIconThumb">
@@ -475,7 +470,6 @@
                 </div>
             </div>
 
-            <!-- 添加指引（三步图片路径保持不变） -->
             <div class="guide-step">
                 <div class="step-image" id="step1Image">
                     <img src="IMG_9933.jpeg" alt="第一步截图" />
@@ -514,7 +508,6 @@
                 </div>
             </div>
 
-            <!-- 底部好按钮 -->
             <div class="button-group guide-done-btn">
                 <button class="btn btn-primary" id="webappOkBtn">好</button>
             </div>
@@ -529,7 +522,6 @@
         </div>
     </div>
 </div>
-<!-- 隐藏的文件输入 -->
 <input type="file" id="fileInput" accept="image/*" style="display:none;" />
 <div id="fullscreenIframeContainer">
     <div id="iframeLoadingMask">
